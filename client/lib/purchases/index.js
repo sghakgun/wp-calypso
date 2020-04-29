@@ -22,6 +22,7 @@ import {
 	isDomainTransfer,
 	isJetpackPlan,
 	isMonthly as isMonthlyProduct,
+	isJetpackProduct,
 	isPlan,
 	isTheme,
 	isConciergeSession,
@@ -642,6 +643,10 @@ function purchaseType( purchase ) {
 
 	if ( isDomainRegistration( purchase ) ) {
 		return purchase.productName;
+	}
+
+	if ( isJetpackProduct( purchase ) ) {
+		return i18n.translate( 'Site Solution' );
 	}
 
 	if ( purchase.meta ) {
