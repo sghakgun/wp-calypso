@@ -79,7 +79,6 @@ import PurchasePlanDetails from './plan-details';
 import PurchaseSiteHeader from '../purchases-site/header';
 import QueryCanonicalTheme from 'components/data/query-canonical-theme';
 import QuerySiteDomains from 'components/data/query-site-domains';
-import QuerySiteProducts from 'components/data/query-site-products';
 import QueryUserPurchases from 'components/data/query-user-purchases';
 import RemovePurchase from '../remove-purchase';
 import VerticalNavItem from 'components/vertical-nav/item';
@@ -421,7 +420,11 @@ class ManagePurchase extends Component {
 						<div className="manage-purchase__description-subcontent">
 							{ translate( '{{strong}}Your Search Tier{{/strong}}: %(tierDescription)s.', {
 								args: {
-									tierDescription: getShortNameCallbackForJetpackSearch( this.props.siteProduct ),
+									tierDescription: getShortNameCallbackForJetpackSearch(
+										this.props.purchase,
+										'renewalPriceTierSlug',
+										'renewalPriceTierUsageQuantity'
+									),
 								},
 								comment: 'An example tier description would read: "Up to 100 records"',
 								components: { strong: <strong /> },
@@ -580,7 +583,6 @@ class ManagePurchase extends Component {
 					title="Purchases > Manage Purchase"
 				/>
 				<QueryUserPurchases userId={ this.props.userId } />
-				<QuerySiteProducts siteId={ this.props.siteId } />
 				{ siteId && <QuerySiteDomains siteId={ siteId } /> }
 				{ isPurchaseTheme && <QueryCanonicalTheme siteId={ siteId } themeId={ purchase.meta } /> }
 				<Main className={ classes }>
@@ -624,10 +626,6 @@ export default connect( ( state, props ) => {
 	const site = getSite( state, siteId );
 	const hasLoadedSites = ! isRequestingSites( state );
 	const hasLoadedDomains = hasLoadedSiteDomains( state, siteId );
-	const siteProduct =
-		purchase && getAvailableProductsBySiteId( state, siteId ).data
-			? getAvailableProductsBySiteId( state, siteId ).data[ purchase.productSlug ]
-			: null;
 	return {
 		hasLoadedDomains,
 		hasLoadedSites,

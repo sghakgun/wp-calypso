@@ -89,8 +89,12 @@ export const getJetpackProductsShortNames = () => {
 	};
 };
 
-export function getShortNameCallbackForJetpackSearch( productObject ) {
-	switch ( productObject.price_tier_slug ) {
+export function getShortNameCallbackForJetpackSearch(
+	productObject,
+	tierKey = 'price_tier_slug',
+	usageKey = 'price_tier_usage_quantity'
+) {
+	switch ( productObject[ tierKey ] ) {
 		case JETPACK_SEARCH_TIER_UP_TO_100_RECORDS:
 			return translate( 'Up to 100 records' );
 		case JETPACK_SEARCH_TIER_UP_TO_1K_RECORDS:
@@ -102,8 +106,7 @@ export function getShortNameCallbackForJetpackSearch( productObject ) {
 		case JETPACK_SEARCH_TIER_UP_TO_1M_RECORDS:
 			return translate( 'Up to 1,000,000 records' );
 		case JETPACK_SEARCH_TIER_MORE_THAN_1M_RECORDS: {
-			const tierMaximumRecords =
-				1000000 * Math.ceil( productObject.price_tier_usage_quantity / 1000000 );
+			const tierMaximumRecords = 1000000 * Math.ceil( productObject[ usageKey ] / 1000000 );
 			return translate( 'Up to %(tierMaximumRecords)s records', {
 				args: {
 					tierMaximumRecords: numberFormat( tierMaximumRecords ),
