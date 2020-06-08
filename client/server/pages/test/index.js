@@ -33,6 +33,8 @@ jest.mock( 'config', () => {
 			env_id: 'stage',
 			rtl: true,
 			discover_logged_out_redirect_url: 'http://discover.url/',
+			i18n_default_locale_slug: 'en',
+			favicon_url: 'http://favicon.url/',
 		};
 		return config[ key ];
 	} );
@@ -56,11 +58,20 @@ jest.mock( 'login', () => {
 	return impl;
 } );
 
+jest.mock( 'browserslist-useragent', () => ( {
+	matchesUA: jest.fn(),
+} ) );
+
+jest.mock( 'state', () => ( {
+	createReduxStore: jest.fn(),
+} ) );
+
 /**
  * External dependencies
  */
 import mockFs from 'mock-fs';
 import cloneDeep from 'lodash/cloneDeep';
+import { matchesUA } from 'browserslist-useragent';
 
 /**
  * Internal dependencies
@@ -69,10 +80,9 @@ import appFactory from '../index';
 import config from 'config';
 import { attachBuildTimestamp, attachHead, attachI18n, renderJsx } from 'server/render';
 import sanitize from 'server/sanitize';
-import { isWooOAuth2Client } from 'lib/oauth2-clients';
+import { createReduxStore } from 'state';
 
-const runApp = async ( { request = {}, response = {} } ) => {
-	const app = appFactory();
+const runApp = async ( { app = appFactory(), request = {}, response = {} } = {} ) => {
 	return new Promise( ( resolve ) => {
 		const mockRequest = {
 			body: {},
@@ -112,16 +122,127 @@ const runApp = async ( { request = {}, response = {} } ) => {
 	} );
 };
 
-const assertDefaultContext = ( { url, entry } ) => {
-	it( 'sets the commit sha if known', async () => {
-		const { request } = await runApp( { request: { url } } );
-		expect( request.context.commitSha ).toBe( 'abcabc' );
+const mockFilesystem = () => {
+	mockFs( {
+		'/Users/sergio/src/automattic/wp-calypso/client/server/bundler/assets-fallback.json': JSON.stringify(
+			{
+				manifests: {
+					manifest: '/* webpack manifest */',
+				},
+				entrypoints: {
+					'entry-main': {
+						assets: [
+							'/calypso/evergreen/entry-main.1.min.js',
+							'/calypso/evergreen/entry-main.2.min.js',
+							'/calypso/evergreen/entry-main.3.min.css',
+							'/calypso/evergreen/entry-main.4.min.rtl.css',
+						],
+					},
+					'entry-domains-landing': {
+						assets: [
+							'/calypso/evergreen/entry-domains-landing.1.min.js',
+							'/calypso/evergreen/entry-domains-landing.2.min.js',
+							'/calypso/evergreen/entry-domains-landing.3.min.css',
+							'/calypso/evergreen/entry-domains-landing.4.min.rtl.css',
+						],
+					},
+				},
+				chunks: [
+					{
+						names: [ 'root' ],
+						files: [ '/calypso/root.js' ],
+						siblings: [],
+					},
+				],
+			}
+		),
+		'/Users/sergio/src/automattic/wp-calypso/client/server/bundler/assets-evergreen.json': JSON.stringify(
+			{
+				manifests: {},
+				entrypoints: {
+					'entry-main': {
+						assets: [],
+					},
+					'entry-domains-landing': {
+						assets: [],
+					},
+				},
+				chunks: [
+					{
+						names: [ 'root' ],
+						files: [ '/calypso/root.js' ],
+						siblings: [],
+					},
+				],
+			}
+		),
 	} );
+};
 
-	it( 'sets the commit sha if unknown', async () => {
-		delete process.env.COMMIT_SHA;
-		const { request } = await runApp( { request: { url } } );
-		expect( request.context.commitSha ).toBe( '(unknown)' );
+const appFactoryWithCustomEnvironment = ( env, setMocks = () => {} ) => {
+	let isolatedAppFactory;
+	jest.resetModules();
+	mockFs.restore();
+	jest.isolateModules( () => {
+		require( 'config' ).mockImplementation( ( key ) => {
+			return key === 'env_id' ? env : undefined;
+		} );
+		setMocks();
+		isolatedAppFactory = require( '../index' );
+	} );
+	mockFilesystem();
+	return isolatedAppFactory;
+};
+
+const withEvergreenBrowser = ( mock = matchesUA ) => {
+	mock.mockImplementation( () => {
+		return true;
+	} );
+};
+
+const withNonEvergreenBrowser = ( mock = matchesUA ) => {
+	mock.mockImplementation( () => false );
+};
+
+const withMockedVariable = ( object, name ) => {
+	const valueExists = name in object;
+	const oldValue = object[ name ];
+
+	return [
+		( value ) => {
+			object[ name ] = value;
+		},
+		() => {
+			if ( valueExists ) object[ name ] = oldValue;
+			else delete object[ name ];
+		},
+	];
+};
+
+const withConfigEnabled = ( enabledOptions ) => {
+	config.isEnabled.mockImplementation( ( key ) => {
+		return enabledOptions[ key ];
+	} );
+};
+
+const assertDefaultContext = ( { url, entry } ) => {
+	describe( 'sets the commit sha', () => {
+		const [ setCommitSha, resetCommitSha ] = withMockedVariable( process.env, 'COMMIT_SHA' );
+
+		afterEach( () => {
+			resetCommitSha();
+		} );
+
+		it( 'uses the value from COMMIT_SHA', async () => {
+			setCommitSha( 'abcabc' );
+			const { request } = await runApp( { request: { url } } );
+			expect( request.context.commitSha ).toBe( 'abcabc' );
+		} );
+
+		it( 'defaults to "(unknown)"', async () => {
+			const { request } = await runApp( { request: { url } } );
+			expect( request.context.commitSha ).toBe( '(unknown)' );
+		} );
 	} );
 
 	it( 'sets the debug mode for the compiler', async () => {
@@ -153,42 +274,217 @@ const assertDefaultContext = ( { url, entry } ) => {
 		const { request } = await runApp( { request: { url, query: { from: 'from' } } } );
 		expect( request.context.requestFrom ).toEqual( 'from' );
 	} );
+
+	it( 'sets lang to the default', async () => {
+		const { request } = await runApp( { request: { url } } );
+		expect( request.context.lang ).toEqual( 'en' );
+	} );
+
+	it( 'sets the entrypoint', async () => {
+		const { request } = await runApp( { request: { url } } );
+		expect( request.context.entrypoint ).toEqual( {
+			js: [ `/calypso/evergreen/${ entry }.1.min.js`, `/calypso/evergreen/${ entry }.2.min.js` ],
+			'css.ltr': [ `/calypso/evergreen/${ entry }.3.min.css` ],
+			'css.rtl': [ `/calypso/evergreen/${ entry }.4.min.rtl.css` ],
+		} );
+	} );
+
+	it( 'sets the manifest', async () => {
+		const { request } = await runApp( { request: { url } } );
+		expect( request.context.manifest ).toEqual( '/* webpack manifest */' );
+	} );
+
+	it( 'sets the favicon_url', async () => {
+		const { request } = await runApp( { request: { url } } );
+		expect( request.context.faviconURL ).toEqual( 'http://favicon.url/' );
+	} );
+
+	describe( 'sets the abTestHepler', () => {
+		it( 'when config is enabled', async () => {
+			withConfigEnabled( { 'dev/test-helper': true } );
+
+			const { request } = await runApp( { request: { url } } );
+
+			expect( request.context.abTestHelper ).toEqual( true );
+		} );
+
+		it( 'when config is disabled', async () => {
+			withConfigEnabled( { 'dev/test-helper': false } );
+
+			const { request } = await runApp( { request: { url } } );
+
+			expect( request.context.abTestHelper ).toEqual( false );
+		} );
+	} );
+
+	describe( 'sets the preferencesHelper', () => {
+		it( 'when config is enabled', async () => {
+			withConfigEnabled( { 'dev/preferences-helper': true } );
+
+			const { request } = await runApp( { request: { url } } );
+
+			expect( request.context.preferencesHelper ).toEqual( true );
+		} );
+
+		it( 'when config is disabled', async () => {
+			withConfigEnabled( { 'dev/preferences-helper': false } );
+
+			const { request } = await runApp( { request: { url } } );
+
+			expect( request.context.preferencesHelper ).toEqual( false );
+		} );
+	} );
+
+	it( 'sets devDocsUrl', async () => {
+		const { request } = await runApp( { request: { url } } );
+		expect( request.context.devDocsURL ).toEqual( '/devdocs' );
+	} );
+
+	it( 'sets redux store', async () => {
+		const theStore = {};
+		createReduxStore.mockImplementation( () => theStore );
+
+		const { request } = await runApp( { request: { url } } );
+
+		expect( request.context.store ).toEqual( theStore );
+	} );
+
+	it( 'sets the evergreen for evergreen browsers check in production', async () => {
+		const isolatedAppFactory = appFactoryWithCustomEnvironment( 'production', () => {
+			withEvergreenBrowser( require( 'browserslist-useragent' ).matchesUA );
+		} );
+
+		const { request } = await runApp( { app: isolatedAppFactory(), request: { url } } );
+
+		expect( request.context.addEvergreenCheck ).toEqual( true );
+	} );
+
+	describe( 'sets the target', () => {
+		const [ setNodeEnv, resetNodeEnv ] = withMockedVariable( process.env, 'NODE_ENV' );
+
+		describe( 'in development mode', () => {
+			const [ setDevTarget, resetDevTarget ] = withMockedVariable( process.env, 'DEV_TARGET' );
+
+			beforeEach( () => {
+				setNodeEnv( 'development' );
+			} );
+
+			afterEach( () => {
+				resetNodeEnv();
+				resetDevTarget();
+			} );
+
+			it( 'uses the value from DEV_TARGET ', async () => {
+				setDevTarget( 'fallback' );
+				const { request } = await runApp( { request: { url } } );
+				expect( request.context.target ).toEqual( 'fallback' );
+			} );
+
+			it( 'defaults to evergreen when DEV_TARGET is not set', async () => {
+				const { request } = await runApp( { request: { url } } );
+				expect( request.context.target ).toEqual( 'evergreen' );
+			} );
+		} );
+
+		describe( 'in production mode', () => {
+			beforeEach( () => {
+				setNodeEnv( 'production' );
+			} );
+
+			afterEach( () => {
+				resetNodeEnv();
+			} );
+
+			it( 'uses fallback if forceFallback is provided as query', async () => {
+				const { request } = await runApp( { request: { url, query: { forceFallback: true } } } );
+				expect( request.context.target ).toEqual( 'fallback' );
+			} );
+
+			it( 'serves evergreen for evergreen browsers', async () => {
+				withEvergreenBrowser();
+
+				const { request } = await runApp( { request: { url } } );
+
+				expect( request.context.target ).toEqual( 'evergreen' );
+			} );
+
+			it( 'serves fallback if the browser is not evergreen', async () => {
+				withNonEvergreenBrowser();
+
+				const { request } = await runApp( { request: { url } } );
+
+				expect( request.context.target ).toEqual( 'fallback' );
+			} );
+		} );
+
+		describe( 'in desktop mode', () => {
+			it( 'defaults to fallback in desktop mode', async () => {
+				const isolatedAppFactory = appFactoryWithCustomEnvironment( 'desktop', () => {
+					withEvergreenBrowser( require( 'browserslist-useragent' ).matchesUA );
+				} );
+
+				const { request } = await runApp( { app: isolatedAppFactory(), request: { url } } );
+
+				expect( request.context.target ).toEqual( 'fallback' );
+			} );
+
+			it( 'defaults to fallback in desktop-development mode', async () => {
+				const isolatedAppFactory = appFactoryWithCustomEnvironment( 'desktop-development', () => {
+					withEvergreenBrowser( require( 'browserslist-useragent' ).matchesUA );
+				} );
+
+				const { request } = await runApp( { app: isolatedAppFactory(), request: { url } } );
+
+				expect( request.context.target ).toEqual( 'fallback' );
+			} );
+		} );
+	} );
+
+	describe( 'uses translations chunks', () => {
+		it( 'disabled by default', async () => {
+			const { request } = await runApp( { request: { url } } );
+
+			expect( request.context.useTranslationChunks ).toEqual( false );
+		} );
+
+		it( 'when enabled in the config', async () => {
+			withConfigEnabled( {
+				'use-translation-chunks': true,
+			} );
+
+			const { request } = await runApp( { request: { url } } );
+
+			expect( request.context.useTranslationChunks ).toEqual( true );
+		} );
+
+		it( 'when enabled in the request flags', async () => {
+			const { request } = await runApp( {
+				request: { url },
+				query: { flags: 'use-translation-chunks' },
+			} );
+
+			expect( request.context.useTranslationChunks ).toEqual( true );
+		} );
+
+		it( 'when specified in the request', async () => {
+			const { request } = await runApp( {
+				request: { url },
+				query: { useTranslationChunks: true },
+			} );
+
+			expect( request.context.useTranslationChunks ).toEqual( true );
+		} );
+	} );
 };
 
 describe( 'main app', () => {
 	beforeEach( () => {
-		config.isEnabled.mockImplementation( ( key ) => key === 'use-translation-chunks' );
-
-		mockFs( {
-			'/Users/sergio/src/automattic/wp-calypso/client/server/bundler/assets-fallback.json': JSON.stringify(
-				{
-					manifests: {},
-					entrypoints: {
-						'entry-main': {
-							assets: [],
-						},
-						'entry-domains-landing': {
-							assets: [],
-						},
-					},
-					chunks: [
-						{
-							names: [ 'root' ],
-							files: [ '/calypso/root.js' ],
-							siblings: [],
-						},
-					],
-				}
-			),
-		} );
-
-		process.env.COMMIT_SHA = 'abcabc';
+		mockFilesystem();
 	} );
 
 	afterEach( async () => {
 		mockFs.restore();
 		jest.clearAllMocks();
-		delete process.env.COMMIT_SHA;
 	} );
 
 	describe( 'Middleware loggedInContext', () => {
@@ -285,20 +581,12 @@ describe( 'main app', () => {
 
 	describe( 'Route /', () => {
 		it( 'redirects to stats if reader is disabled', async () => {
-			config.isEnabled.mockImplementation( ( key ) => {
-				switch ( key ) {
-					case 'reader':
-						return false;
-					case 'stats':
-						return true;
-				}
+			withConfigEnabled( {
+				reader: false,
+				stats: true,
 			} );
 
-			const { response } = await runApp( {
-				request: {
-					url: '/',
-				},
-			} );
+			const { response } = await runApp( { request: { url: '/' } } );
 
 			expect( response.redirect ).toHaveBeenCalledWith( '/stats' );
 		} );
