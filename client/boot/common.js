@@ -52,7 +52,7 @@ import detectHistoryNavigation from 'lib/detect-history-navigation';
 import userFactory from 'lib/user';
 import { getUrlParts, isOutsideCalypso } from 'lib/url';
 import { setStore } from 'state/redux-store';
-import { requestUnseenStatusAny } from 'state/reader-ui/seen-posts/actions';
+import { requestUnseenStatus } from 'state/ui/reader/seen-posts/actions';
 
 const debug = debugFactory( 'calypso' );
 
@@ -359,7 +359,7 @@ const setupMiddlewares = ( currentUser, reduxStore ) => {
 	const state = reduxStore.getState();
 	// get reader unread status
 	if ( config.isEnabled( 'reader/seen-posts' ) ) {
-		reduxStore.dispatch( requestUnseenStatusAny() );
+		reduxStore.dispatch( requestUnseenStatus() );
 	}
 
 	if ( config.isEnabled( 'happychat' ) ) {
