@@ -23,34 +23,6 @@
 	margin-top: 48px;
 }
 
-.p2-site__form-submit-btn.is-primary {
-	float: none;
-	margin: 0;
-	padding: 18px 24px;
-	width: 100%;
-	background-color: var( --p2-color-link );
-	border: none;
-	border-radius: 40px;
-	font-weight: normal;
-	font-size: 18px;
-	color: var( --p2-color-text-white );
-	transition: background 0.2s ease;
-
-	&:hover,
-	&:focus {
-		background-color: var( --p2-color-link-dark );
-		border: none;
-		color: var( --p2-color-text-white );
-	}
-
-	&[disabled] {
-		opacity: 0.5;
-		color: var( --p2-color-text-white );
-		background-color: var( --p2-color-link );
-		border: none;
-	}
-}
-
 .p2-site__form .form-label {
 	color: var( --p2-color-text );
 	font-weight: normal;
