@@ -45,7 +45,6 @@ import {
 	hasLoadedUserPurchasesFromServer,
 	getRenewableSitePurchases,
 } from 'state/purchases/selectors';
-import { getAvailableProductsBySiteId } from 'state/sites/products/selectors';
 import { getCanonicalTheme } from 'state/themes/selectors';
 import isSiteAtomic from 'state/selectors/is-site-automated-transfer';
 import Gridicon from 'components/gridicon';
@@ -639,7 +638,6 @@ export default connect( ( state, props ) => {
 		siteId,
 		site,
 		renewableSitePurchases,
-		siteProduct,
 		plan: isPurchasePlan && applyTestFiltersToPlansList( purchase.productSlug, abtest ),
 		isPurchaseTheme,
 		theme: isPurchaseTheme && getCanonicalTheme( state, siteId, purchase.meta ),
