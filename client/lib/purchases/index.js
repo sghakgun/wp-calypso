@@ -646,7 +646,7 @@ function purchaseType( purchase ) {
 	}
 
 	if ( isJetpackProduct( purchase ) ) {
-		return i18n.translate( 'Site Solution' );
+		return i18n.translate( 'Site Add-on' );
 	}
 
 	if ( purchase.meta ) {
