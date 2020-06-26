@@ -32,22 +32,22 @@
 	"dependencies": {
 		"@automattic/data-stores": "^1.0.0-alpha.1",
 		"@automattic/react-i18n": "^1.0.0-alpha.0",
-		"@wordpress/components": "^9.6.0",
-		"@wordpress/compose": "^3.16.0",
-		"@wordpress/icons": "^2.0.0",
-		"@wordpress/primitives": "^1.5.0",
+		"@wordpress/components": "^9.9.0",
+		"@wordpress/compose": "^3.18.0",
+		"@wordpress/icons": "^2.3.0",
+		"@wordpress/primitives": "^1.6.0",
 		"classnames": "^2.2.6",
 		"lodash": "^4.17.15",
 		"tslib": "^1.10.0",
 		"uuid": "^7.0.2"
 	},
 	"devDependencies": {
-		"@wordpress/base-styles": "^1.8.0"
+		"@wordpress/base-styles": "^1.11.0"
 	},
 	"peerDependencies": {
-		"@wordpress/data": "^4.18.0",
-		"@wordpress/element": "^2.14.0",
-		"@wordpress/i18n": "^3.10.0",
+		"@wordpress/data": "^4.21.0",
+		"@wordpress/element": "^2.15.0",
+		"@wordpress/i18n": "^3.14.0",
 		"react": "^16.8"
 	},
 	"private": true
