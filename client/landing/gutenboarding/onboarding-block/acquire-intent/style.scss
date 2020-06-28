@@ -132,8 +132,9 @@
 		color: var( --mainColor );
 		caret-color: var( --mainColor );
 
-		&:focus {
+		html:not( .accessible-focus ) &:focus {
 			outline: none;
+			box-shadow: none;
 		}
 
 		&::-ms-clear {
