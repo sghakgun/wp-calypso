@@ -43,6 +43,10 @@ $admin-sidebar-width-collapsed: 0;
 	@include break-small {
 		padding-top: $gutenboarding-header-height;
 	}
+	// override block max-width because data-align='full' is missing
+	.wp-block[data-type='automattic/onboarding'] {
+		max-width: none;
+	}
 }
 
 input:disabled {
