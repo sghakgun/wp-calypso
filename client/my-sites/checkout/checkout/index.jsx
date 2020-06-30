@@ -756,7 +756,10 @@ export class Checkout extends React.Component {
 		this.props.setHeaderText( '' );
 
 		if (
-			( cart.create_new_blog && receipt && isEmpty( receipt.failed_purchases ) ) ||
+			( ! this.props.isLoggedOutCart &&
+				cart.create_new_blog &&
+				receipt &&
+				isEmpty( receipt.failed_purchases ) ) ||
 			( isDomainOnly && hasPlan( cart ) && ! selectedSiteId )
 		) {
 			notices.info( translate( 'Almost done…' ) );
@@ -774,6 +777,12 @@ export class Checkout extends React.Component {
 
 				return;
 			}
+		}
+
+		if ( this.props.isLoggedOutCart ) {
+			window.localStorage.removeItem( 'shoppingCart' );
+			window.location = redirectPath;
+			return;
 		}
 
 		page( redirectPath );
@@ -824,6 +833,7 @@ export class Checkout extends React.Component {
 				handleCheckoutCompleteRedirect={ this.handleCheckoutCompleteRedirect }
 				handleCheckoutExternalRedirect={ this.handleCheckoutExternalRedirect }
 				isWhiteGloveOffer={ isWhiteGloveOffer }
+				isLoggedOutCart={ isLoggedOutCart }
 			>
 				{ this.renderSubscriptionLengthPicker() }
 			</SecurePaymentForm>
@@ -836,7 +846,9 @@ export class Checkout extends React.Component {
 			return false;
 		}
 
-		const currentPlanSlug = this.props.selectedSite && this.props.selectedSite.plan.product_slug;
+		const currentPlanSlug = this.props.isLoggedOutCart
+			? 'free_plan'
+			: this.props.selectedSite.plan.product_slug;
 		const chosenPlan = getPlan( planInCart.product_slug );
 
 		// Only render this for WP.com plans
@@ -980,7 +992,7 @@ export default connect(
 			isDomainOnly: isDomainOnlySite( state, selectedSiteId ),
 			selectedSite: getSelectedSite( state ),
 			selectedSiteId,
-			selectedSiteSlug: getSelectedSiteSlug( state ),
+			selectedSiteSlug: getSelectedSiteSlug( state ) || '',
 			isNewlyCreatedSite: isNewSite( state, selectedSiteId ),
 			contactDetails: getContactDetailsCache( state ),
 			userCountryCode: getCurrentUserCountryCode( state ),
