@@ -88,7 +88,6 @@ export default function WPCheckout( {
 	changePlanLength,
 	siteId,
 	siteUrl,
-	CountrySelectMenu,
 	CheckoutTerms,
 	countriesList,
 	StateSelect,
@@ -292,7 +291,6 @@ export default function WPCheckout( {
 									siteUrl={ siteUrl }
 									isComplete={ false }
 									isActive={ true }
-									CountrySelectMenu={ CountrySelectMenu }
 									countriesList={ countriesList }
 									StateSelect={ StateSelect }
 									renderDomainContactFields={ renderDomainContactFields }

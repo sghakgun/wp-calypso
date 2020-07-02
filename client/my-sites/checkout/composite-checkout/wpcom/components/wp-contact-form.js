@@ -26,6 +26,7 @@ import { LeftColumn, RightColumn } from './ie-fallback';
 import { prepareDomainContactDetails, prepareDomainContactDetailsErrors, isValid } from '../types';
 import getContactDetailsCache from 'state/selectors/get-contact-details-cache';
 import { isGSuiteProductSlug } from 'lib/gsuite';
+import CountrySelectMenu from 'my-sites/checkout/composite-checkout/wpcom/components/country-select-menu';
 
 const debug = debugFactory( 'calypso:composite-checkout:wp-contact-form' );
 
@@ -33,7 +34,6 @@ export default function WPContactForm( {
 	summary,
 	isComplete,
 	isActive,
-	CountrySelectMenu,
 	countriesList,
 	renderDomainContactFields,
 	shouldShowContactDetailsValidationErrors,
@@ -71,7 +71,6 @@ export default function WPContactForm( {
 				isGSuiteInCart={ isGSuiteInCart }
 				contactInfo={ contactInfo }
 				renderDomainContactFields={ renderDomainContactFields }
-				CountrySelectMenu={ CountrySelectMenu }
 				countriesList={ countriesList }
 				shouldShowContactDetailsValidationErrors={ shouldShowContactDetailsValidationErrors }
 				isDisabled={ isDisabled }
@@ -136,7 +135,6 @@ function VatIdField() {
 function TaxFields( {
 	section,
 	taxInfo,
-	CountrySelectMenu,
 	countriesList,
 	updatePostalCode,
 	updateCountryCode,
@@ -279,7 +277,6 @@ function RenderContactDetails( {
 	isGSuiteInCart,
 	contactInfo,
 	renderDomainContactFields,
-	CountrySelectMenu,
 	countriesList,
 	shouldShowContactDetailsValidationErrors,
 	isDisabled,
@@ -335,7 +332,6 @@ function RenderContactDetails( {
 				taxInfo={ contactInfo }
 				updateCountryCode={ updateCountryCode }
 				updatePostalCode={ updatePostalCode }
-				CountrySelectMenu={ CountrySelectMenu }
 				countriesList={ countriesList }
 				isDisabled={ isDisabled }
 			/>
