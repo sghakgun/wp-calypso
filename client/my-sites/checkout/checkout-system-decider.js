@@ -7,6 +7,7 @@ import debugFactory from 'debug';
 import wp from 'lib/wp';
 import { CheckoutErrorBoundary } from '@automattic/composite-checkout';
 import { useTranslate } from 'i18n-calypso';
+import cookie from 'cookie';
 
 /**
  * Internal Dependencies
@@ -16,13 +17,20 @@ import CompositeCheckout from './composite-checkout/composite-checkout';
 import { fetchStripeConfiguration } from './composite-checkout/payment-method-helpers';
 import { StripeHookProvider } from 'lib/stripe';
 import config from 'config';
-import { getCurrentUserLocale, getCurrentUserCountryCode } from 'state/current-user/selectors';
+import { getCurrentUserCountryCode } from 'state/current-user/selectors';
+import getCurrentLocaleSlug from 'state/selectors/get-current-locale-slug';
 import { isJetpackSite } from 'state/sites/selectors';
 import isSiteAutomatedTransfer from 'state/selectors/is-site-automated-transfer';
 import { logToLogstash } from 'state/logstash/actions';
 
 const debug = debugFactory( 'calypso:checkout-system-decider' );
 const wpcom = wp.undocumented();
+
+function getGeoLocationFromCookie() {
+	const cookies = cookie.parse( document.cookie );
+
+	return cookies.country_code;
+}
 
 // Decide if we should use CompositeCheckout or CheckoutContainer
 export default function CheckoutSystemDecider( {
@@ -46,8 +54,9 @@ export default function CheckoutSystemDecider( {
 } ) {
 	const isJetpack = useSelector( ( state ) => isJetpackSite( state, selectedSite?.ID ) );
 	const isAtomic = useSelector( ( state ) => isSiteAutomatedTransfer( state, selectedSite?.ID ) );
-	const countryCode = useSelector( ( state ) => getCurrentUserCountryCode( state ) );
-	const locale = useSelector( ( state ) => getCurrentUserLocale( state ) );
+	const countryCode =
+		useSelector( ( state ) => getCurrentUserCountryCode( state ) ) || getGeoLocationFromCookie();
+	const locale = useSelector( ( state ) => getCurrentLocaleSlug( state ) );
 	const reduxDispatch = useDispatch();
 	const checkoutVariant = getCheckoutVariant(
 		cart,
@@ -114,6 +123,12 @@ export default function CheckoutSystemDecider( {
 	}
 
 	if ( 'composite-checkout' === checkoutVariant ) {
+		let siteSlug = selectedSite?.slug;
+
+		if ( ! siteSlug ) {
+			siteSlug = isLoggedOutCart ? 'no-user' : 'no-site';
+		}
+
 		return (
 			<CheckoutErrorBoundary
 				errorMessage={ translate( 'Sorry, there was an error loading this page.' ) }
@@ -121,7 +136,7 @@ export default function CheckoutSystemDecider( {
 			>
 				<StripeHookProvider fetchStripeConfiguration={ fetchStripeConfigurationWpcom }>
 					<CompositeCheckout
-						siteSlug={ selectedSite?.slug }
+						siteSlug={ siteSlug }
 						siteId={ selectedSite?.ID }
 						product={ product }
 						purchaseId={ purchaseId }
