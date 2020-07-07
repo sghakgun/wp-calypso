@@ -21,6 +21,6 @@
 	},
 	"scripts": {},
 	"peerDependencies": {
-		"webpack": "^4.29.6"
+		"webpack": "^4.43.0"
 	}
 }
