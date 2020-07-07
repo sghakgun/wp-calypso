@@ -28,6 +28,7 @@
 		"@wordpress/editor": "^9.16.0",
 		"@wordpress/element": "^2.14.0",
 		"@wordpress/i18n": "^3.12.0",
-		"classnames": "^2.2.6"
+		"classnames": "^2.2.6",
+		"new-github-issue-url": "^0.2.1"
 	}
 }
