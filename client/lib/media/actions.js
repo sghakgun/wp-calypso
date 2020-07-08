@@ -13,12 +13,7 @@ import wpcom from 'lib/wp';
 import { reduxDispatch } from 'lib/redux-bridge';
 import MediaStore from './store';
 import MediaListStore from './list-store';
-import {
-	changeMediaSource,
-	failMediaRequest,
-	receiveMedia,
-	successMediaRequest,
-} from 'state/media/actions';
+import { failMediaRequest, receiveMedia, successMediaRequest } from 'state/media/actions';
 
 /**
  * @typedef IMediaActions
@@ -88,15 +83,6 @@ MediaActions.edit = function ( siteId, item ) {
 		siteId: siteId,
 		data: newItem,
 	} );
-};
-
-MediaActions.sourceChanged = function ( siteId ) {
-	debug( 'Media data source changed' );
-	Dispatcher.handleViewAction( {
-		type: 'CHANGE_MEDIA_SOURCE',
-		siteId,
-	} );
-	reduxDispatch( changeMediaSource( siteId ) );
 };
 
 export default MediaActions;

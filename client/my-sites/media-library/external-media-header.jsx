@@ -17,7 +17,7 @@ import { Card, Button } from '@automattic/components';
 import MediaActions from 'lib/media/actions';
 import MediaListStore from 'lib/media/list-store';
 import StickyPanel from 'components/sticky-panel';
-import { addExternalMedia } from 'state/media/thunks';
+import { addExternalMedia, changeMediaSource } from 'state/media/thunks';
 
 const DEBOUNCE_TIME = 250;
 
@@ -90,7 +90,7 @@ class MediaLibraryExternalHeader extends React.Component {
 	onClick() {
 		const { ID } = this.props.site;
 
-		MediaActions.sourceChanged( ID );
+		this.props.changeMediaSource( ID );
 		MediaActions.fetchNextPage( ID );
 	}
 
@@ -159,4 +159,6 @@ class MediaLibraryExternalHeader extends React.Component {
 	}
 }
 
-export default connect( null, { addExternalMedia } )( localize( MediaLibraryExternalHeader ) );
+export default connect( null, { addExternalMedia, changeMediaSource } )(
+	localize( MediaLibraryExternalHeader )
+);
