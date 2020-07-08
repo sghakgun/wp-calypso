@@ -267,8 +267,8 @@ export default {
 
 		if ( flowName === 'onboarding' || flowName === 'onboarding-plan-first' ) {
 			context.primary = (
-				<Experiment name="domain_step_plan_step_swap">
-					<DefaultVariation>
+				<Experiment name="signup_domain_plan_step_swap">
+					<DefaultVariation name="control_domains_first">
 						<SignupComponent
 							store={ context.store }
 							path={ context.path }
@@ -283,7 +283,7 @@ export default {
 							pageTitle={ getFlowPageTitle( flowName ) }
 						/>
 					</DefaultVariation>
-					<Variation name="show_swapped">
+					<Variation name="variant_plans_first">
 						<SignupComponent
 							store={ context.store }
 							path={ context.path }
