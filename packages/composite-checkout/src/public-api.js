@@ -73,6 +73,7 @@ import { useFormStatus } from './lib/form-status';
 import { CheckIcon as CheckoutCheckIcon } from './components/shared-icons';
 import { useTransactionStatus } from './lib/transaction-status';
 import { usePaymentProcessor } from './lib/payment-processors';
+import checkoutTheme from './theme';
 
 // Re-export the public API
 export {
@@ -142,4 +143,5 @@ export {
 	useSetStepComplete,
 	useTotal,
 	useTransactionStatus,
+	checkoutTheme,
 };
