@@ -17,7 +17,8 @@ import { Card, Button } from '@automattic/components';
 import MediaActions from 'lib/media/actions';
 import MediaListStore from 'lib/media/list-store';
 import StickyPanel from 'components/sticky-panel';
-import { addExternalMedia, changeMediaSource } from 'state/media/thunks';
+import { addExternalMedia } from 'state/media/thunks';
+import { changeMediaSource } from 'state/media/actions';
 
 const DEBOUNCE_TIME = 250;
 
