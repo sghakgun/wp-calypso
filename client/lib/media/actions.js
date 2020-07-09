@@ -14,15 +14,12 @@ import { reduxDispatch, reduxGetState } from 'lib/redux-bridge';
 import { createTransientMedia, getFileUploader } from './utils';
 import getMediaItemErrors from 'state/selectors/get-media-item-errors';
 import MediaStore from './store';
-import MediaListStore from './list-store';
 import {
 	changeMediaSource,
 	createMediaItem,
 	failMediaItemRequest,
-	failMediaRequest,
 	receiveMedia,
 	successMediaItemRequest,
-	successMediaRequest,
 } from 'state/media/actions';
 
 /**
@@ -51,43 +48,6 @@ MediaActions.setQuery = function ( siteId, query ) {
 		siteId: siteId,
 		query: query,
 	} );
-};
-
-MediaActions.fetchNextPage = function ( siteId ) {
-	if ( MediaListStore.isFetchingNextPage( siteId ) ) {
-		return;
-	}
-
-	Dispatcher.handleViewAction( {
-		type: 'FETCH_MEDIA_ITEMS',
-		siteId: siteId,
-	} );
-
-	const query = MediaListStore.getNextPageQuery( siteId );
-
-	const mediaReceived = ( error, data ) => {
-		Dispatcher.handleServerAction( {
-			type: 'RECEIVE_MEDIA_ITEMS',
-			error: error,
-			siteId: siteId,
-			data: data,
-			query: query,
-		} );
-		if ( error ) {
-			reduxDispatch( failMediaRequest( siteId, query, error ) );
-		} else {
-			reduxDispatch( successMediaRequest( siteId, query ) );
-			reduxDispatch( receiveMedia( siteId, data.media, data.found, query ) );
-		}
-	};
-
-	debug( 'Fetching media for %d using query %o', siteId, query );
-
-	if ( ! query.source ) {
-		wpcom.site( siteId ).mediaList( query, mediaReceived );
-	} else {
-		wpcom.undocumented().externalMediaList( query, mediaReceived );
-	}
 };
 
 const getExternalUploader = ( service ) => ( file, siteId ) => {
