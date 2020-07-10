@@ -31,9 +31,13 @@ import { useHasRenewalInCart } from '../hooks/has-renewal';
 import { isWpComBusinessPlan, isWpComEcommercePlan } from 'lib/plans';
 import isPresalesChatAvailable from 'state/happychat/selectors/is-presales-chat-available';
 import isHappychatAvailable from 'state/happychat/selectors/is-happychat-available';
+import { getSelectedSiteId } from 'state/ui/selectors';
+import { isJetpackSite } from 'state/sites/selectors';
+import isAtomicSite from 'state/selectors/is-site-automated-transfer';
 import QuerySupportTypes from 'blocks/inline-help/inline-help-query-support-types';
 import isSupportVariationDetermined from 'state/selectors/is-support-variation-determined';
 import { isEnabled } from 'config';
+import JetpackLogo from 'components/jetpack-logo';
 
 export default function WPCheckoutOrderSummary() {
 	const translate = useTranslate();
@@ -43,6 +47,11 @@ export default function WPCheckoutOrderSummary() {
 	const { formStatus } = useFormStatus();
 
 	const isCartUpdating = 'validating' === formStatus;
+
+	const siteId = useSelector( getSelectedSiteId );
+	const isJetpackNotAtomic = useSelector(
+		( state ) => isJetpackSite( state, siteId ) && ! isAtomicSite( state, siteId )
+	);
 
 	return (
 		<CheckoutSummaryCardUI className={ isCartUpdating ? 'is-loading' : '' }>
@@ -77,6 +86,7 @@ export default function WPCheckoutOrderSummary() {
 					</span>
 				</CheckoutSummaryTotal>
 			</CheckoutSummaryAmountWrapper>
+			{ isJetpackNotAtomic && <JetpackLogoUI full /> }
 		</CheckoutSummaryCardUI>
 	);
 }
@@ -399,6 +409,11 @@ const CheckoutSummaryLineItem = styled.div`
 
 const CheckoutSummaryTotal = styled( CheckoutSummaryLineItem )`
 	font-weight: ${ ( props ) => props.theme.weights.bold };
+`;
+
+const JetpackLogoUI = styled( JetpackLogo )`
+	display: block;
+	margin: 0 auto 20px;
 `;
 
 const LoadingCopy = styled.p`
