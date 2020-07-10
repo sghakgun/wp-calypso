@@ -5,7 +5,7 @@
 	"main": "src/index.js",
 	"dependencies": {
 		"gettext-parser": "^4.0.3",
-		"lodash": "^4.17.15"
+		"lodash": "^4.17.19"
 	},
 	"peerDependencies": {
 		"@babel/core": "^7.0.0"
