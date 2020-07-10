@@ -177,8 +177,8 @@ function getCheckoutVariant(
 		return 'composite-checkout';
 	}
 
-	// Disable if this is a jetpack site
-	if ( isJetpack && ! isAtomic ) {
+	// Disable for Jetpack sites in production
+	if ( config( 'env_id' ) === 'production' && isJetpack && ! isAtomic ) {
 		debug( 'shouldShowCompositeCheckout false because jetpack site' );
 		return 'jetpack-site';
 	}
@@ -187,8 +187,11 @@ function getCheckoutVariant(
 		debug( 'shouldShowCompositeCheckout false because currency is not USD' );
 		return 'disallowed-currency';
 	}
-	// Disable for jetpack plans
-	if ( cart.products?.find( ( product ) => product.product_slug.includes( 'jetpack' ) ) ) {
+	// Disable for Jetpack plans in production
+	if (
+		config( 'env_id' ) === 'production' &&
+		cart.products?.find( ( product ) => product.product_slug.includes( 'jetpack' ) )
+	) {
 		debug( 'shouldShowCompositeCheckout false because cart contains jetpack' );
 		return 'jetpack-product';
 	}
