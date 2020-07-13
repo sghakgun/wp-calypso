@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { assign } from 'lodash';
 import debugFactory from 'debug';
 const debug = debugFactory( 'calypso:media' );
 
@@ -13,7 +12,6 @@ import wpcom from 'lib/wp';
 import { reduxDispatch, reduxGetState } from 'lib/redux-bridge';
 import { createTransientMedia, getFileUploader } from './utils';
 import getMediaItemErrors from 'state/selectors/get-media-item-errors';
-import MediaStore from './store';
 import MediaListStore from './list-store';
 import {
 	changeMediaSource,

@@ -6,7 +6,6 @@
  * External dependencies
  */
 import { expect } from 'chai';
-import { assign } from 'lodash';
 import sinon from 'sinon';
 
 /**
@@ -15,7 +14,6 @@ import sinon from 'sinon';
 import {
 	DUMMY_API_RESPONSE,
 	DUMMY_BLOB_UPLOAD,
-	DUMMY_ITEM,
 	DUMMY_QUERY,
 	DUMMY_SITE_ID,
 	DUMMY_UPLOAD,
