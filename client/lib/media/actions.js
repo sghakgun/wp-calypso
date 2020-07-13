@@ -181,16 +181,6 @@ MediaActions.add = function ( site, files ) {
 	return uploadFiles( getFileUploader(), files, site );
 };
 
-MediaActions.edit = function ( siteId, item ) {
-	const newItem = assign( {}, MediaStore.get( siteId, item.ID ), item );
-
-	Dispatcher.handleViewAction( {
-		type: 'RECEIVE_MEDIA_ITEM',
-		siteId: siteId,
-		data: newItem,
-	} );
-};
-
 MediaActions.sourceChanged = function ( siteId ) {
 	debug( 'Media data source changed' );
 	Dispatcher.handleViewAction( {

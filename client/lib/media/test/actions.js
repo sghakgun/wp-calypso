@@ -280,20 +280,6 @@ describe( 'MediaActions', () => {
 		} );
 	} );
 
-	describe( '#edit()', () => {
-		const item = { ID: 100, description: 'Example' };
-
-		test( 'should immediately edit the existing item', () => {
-			MediaActions.edit( DUMMY_SITE_ID, item );
-
-			expect( Dispatcher.handleViewAction ).to.have.been.calledWithMatch( {
-				type: 'RECEIVE_MEDIA_ITEM',
-				siteId: DUMMY_SITE_ID,
-				data: assign( {}, DUMMY_ITEM, item ),
-			} );
-		} );
-	} );
-
 	describe( '#sourceChanged()', () => {
 		test( 'should dispatch the `CHANGE_MEDIA_SOURCE` action with the specified siteId', () => {
 			MediaActions.sourceChanged( DUMMY_SITE_ID );
